@@ -326,10 +326,10 @@ const Costs = {
      * the passed maximum and either the player's or his opponent's gold.
      * Used by Ritual of R'hllor, Loot, The Things I Do For Love and Melee at Bitterbridge.
      */
-    payXGold: function(minFunc, maxFunc, opponentFunc) {
+    payXGold: function(minFunc, maxFunc, opponentFunc, playingType = 'play') {
         return {
             canPay: function(context) {
-                let reduction = context.player.getCostReduction('play', context.source);
+                let reduction = context.player.getCostReduction(playingType, context.source);
                 let opponentObj = opponentFunc && opponentFunc(context);
 
                 if(!opponentObj) {
@@ -338,9 +338,9 @@ const Costs = {
                 return opponentObj.getSpendableGold() >= (minFunc(context) - reduction);
             },
             resolve: function(context, result = { resolved: false }) {
-                let reduction = context.player.getCostReduction('play', context.source);
+                let reduction = context.player.getCostReduction(playingType, context.source);
                 let opponentObj = opponentFunc && opponentFunc(context);
-                let gold = opponentObj ? opponentObj.getSpendableGold({ playingType: 'play' }) : context.player.getSpendableGold({ playingType: 'play' });
+                let gold = opponentObj ? opponentObj.getSpendableGold({ playingType: playingType }) : context.player.getSpendableGold({ playingType: playingType });
                 let max = Math.min(maxFunc(context), gold + reduction);
 
                 context.game.queueStep(new XValuePrompt(minFunc(context), max, context, reduction));
@@ -352,11 +352,11 @@ const Costs = {
             pay: function(context) {
                 let opponentObj = opponentFunc && opponentFunc(context);
                 if(!opponentObj) {
-                    context.game.spendGold({ player: context.player, amount: context.goldCost, playingType: 'play' });
+                    context.game.spendGold({ player: context.player, amount: context.goldCost, playingType: playingType });
                 } else {
-                    context.game.spendGold({ player: opponentObj, amount: context.goldCost, playingType: 'play' });
+                    context.game.spendGold({ player: opponentObj, amount: context.goldCost, playingType: playingType });
                 }
-                context.player.markUsedReducers('play', context.source);
+                context.player.markUsedReducers(playingType, context.source);
             }
         };
     },
